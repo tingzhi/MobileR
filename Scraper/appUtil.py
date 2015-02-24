@@ -3,13 +3,6 @@ import sys
 import myUtility
 import datetime
 import re
-import emojiDict
-import enchant #spell checking library -> is english?
-import guess_language #for language prediction!
-import goslate
-import langid
-
-engDict = enchant.Dict("en_US")
 
 class Entry:
 	def __init__ (self, idnum):
@@ -131,24 +124,19 @@ class Review:
 		jsonStr = jsonStr + self.country + "\"}"
 		return jsonStr.encode("ascii", "ignore")
 
-	def replace_emojis(self, strn):
-		ret = strn
-		emojis = re.findall (r'\xf0\x9f..', ret)
-		for e in emojis:
-			ret = re.sub(e, emojiDict.emojiToEmoticon[e], ret)
+	def remove_json_breakers(self, strn):
+		ret = strn.replace("\n", " ")
+		ret = ret.replace("\r", " ")
+		ret = ret.replace("\r\n", " ")
 		return ret
 
-
 	def clean_text(self, strn):
-		#TODO Check english
-		#	spell check
-		ret = self.replace_emojis(strn)
-		ret = ret.replace("\\", "\\\\")
-		ret = ret.replace("\n\r", " ")
-		ret = ret.replace("\r", " ")
+		ret = strn.replace("\\", "\\\\")
 		ret = ret.replace("\"", "\\\"")
 		ret = re.sub('\\\*\"', '\\\"', ret) #This gets rid of extra parenthesis
 		ret = ret.replace("\t", " ")
+		ret = ret.replace("\r", " ")
+		ret = ret.replace("\r\n", " ")
 		return ret
 
 	
@@ -177,16 +165,17 @@ class Review:
 			self.id = data["reviewId"]
 			self.country = data["country"]
 		except ValueError:
-			print "AppUtil - Value error:", sys.exc_info()[0], " in: "
+			print "Value error:", sys.exc_info()[0], " in: "
 			print jsonStr
-		except:
-			print "AppUtil - Unexpected error:", sys.exc_info()[0], " in: "
+		except Exception as e:
+			print e
+			print "Unexpected error:", sys.exc_info()[0], " in: "
 			print jsonStr
 		
 	def fromJson(self, jsonStr):
 		try:
-			#jsonStr = remove_escape_characters(jsonStr)
-			data = json.loads(jsonStr)
+			newStr = self.remove_json_breakers(jsonStr)
+			data = json.loads(newStr)
 			self.title = self.clean_text(data["title"])
 			self.rating = data["rating"]
 			self.user = self.clean_text(data["user"])
@@ -200,10 +189,11 @@ class Review:
 			self.id = data["reviewId"]
 			self.country = data["country"]
 		except ValueError:
-			print "AppUtil - Value error:", sys.exc_info()[0], " in: "
+			print "Value error:", sys.exc_info()[0], " in: "
 			print jsonStr
-		except:
-			print "AppUtil - Unexpected error:", sys.exc_info()[0], " in: "
+		except Exception as e:
+			print e
+			print "Unexpected error:", sys.exc_info()[0], " in: "
 			print jsonStr
 			
 
@@ -213,121 +203,7 @@ class Review:
 
 	def Print(self):
 		return self.text
-
-
-class MeiRev:
-
-	def __init__(self):
-		self.appName = ""
-		self.title = ""
-		self.text = ""
-		self.versionNumber = ""
-		self.labels = ""
-		self.date = datetime.datetime.min
-	
-	def check_Language(self, strn):
-	#	gs = goslate.Goslate()
-	#	if len(strn) < 20:
-	#		while len(strn) < 20:
-	#			strn = strn + " " + strn
-#		lang = guess_language.guessLanguage(strn)
-		lang = langid.classify(strn[:100])[0]
-	#	lang = gs.detect(strn[:100])
-		if lang != 'en':
-			raise Exception("AppUtil.MeiRev - Not English Submission " + strn + " Language - " + str(lang) )
-	
-	
-	def replace_emojis(self, strn):
-		ret = strn
-		emojis = re.findall (r'\xf0\x9f..', ret)
-		for e in emojis:
-			ret = re.sub(e, emojiDict.emojiToEmoticon[e], ret)
-		return ret
-
-	def clean_text(self, strn):
-		ret = self.replace_emojis(strn)
-		ret = ret.replace("\\", "\\\\")
-		ret = ret.replace("\"", "\\\"")
-	#	ret = ret.replace('\xe2\x80\xa6', "...")
-		ret = re.sub('\\\*\"', '\\\"', ret) #This gets rid of extra parenthesis
-		ret = ret.replace("\t", " ")
-		ret = ret.replace("\n", " ")
-		ret = re.sub('\s{2,}', ' ', ret) # this get rid of large spaces
-		ret = ret.replace("<semicolon>", ";") #for translating from the csv, there were some storage errors
-		ret = re.sub('[^\x00-\x7F]', "", ret)
-		return ret
-
-
-	def fromCSVrowLs(self, ls):
-		try:
-			self.check_Language(ls[2])
-
-		except Exception as err:
-			raise err	
-		self.appName = self.clean_text(ls[0])
-		self.title = self.clean_text(ls[1])
-		self.text = self.clean_text(ls[2])
-		self.versionNumber = self.clean_text(ls[3])
-		self.labels = self.clean_text(ls[4])
-		self.date = datetime.datetime.strptime(ls[7], "%Y-%m-%d")
-
-	def fromJson(self, jsonstr):
-		try:
-			data = json.loads(jsonstr)
-		except ValueError as err:
-			print "Problem with string : " + jsonstr
-			raise err
-		try:
-			self.check_Language(data["text"])
-		except Exception as err:
-			raise err	
-	
-		self.appName = self.clean_text(data["appName"])
-		self.title = self.clean_text(data["title"])
-		self.text = self.clean_text(data["text"])
-		self.versionNumber = data["versionNumber"]
-		self.labels = data["tags"]
-		self.date = datetime.datetime.strptime(data["date"], "%Y-%m-%d %H:%M:%S")
-
-	def toJsonStr(self):
-		try:
-			jsonStr = "{\"title\":\"" + self.clean_text(self.title) + "\",\"appName\":\""
-			jsonStr = jsonStr + self.clean_text(self.appName) + "\",\"versionNumber\":\""
-			jsonStr = jsonStr + self.versionNumber + "\",\"date\":\""
-			jsonStr = jsonStr + str(self.date) + "\",\"text\":\""
-			jsonStr = jsonStr + self.clean_text(self.text) + "\",\"tags\":\""
-			jsonStr = jsonStr + self.clean_text(self.labels) +  "\"}"
-			return jsonStr.encode("ascii", "ignore")
-		except:
-			raise Exception ("AppUtil.MeiRev.toJsonStr - Unexpected error:" +  str(sys.exc_info()[0]) + " in: " + self.title + " " + self.text)
-			
-
-
-	def __eq__(self, other):
-		if self.appName == other.appName and self.title == other.title and self.text == other.text and self.date == other.date:
-			return True
-		else:	
-			return False
-
-	def __str__(self):
-		return self.appName +": " + self.title
-
-
-def ObjectToJsonStrList(objls):
-	ret = []
-	for el in objls:
-		ret.append(el.toJsonStr())
-	return ret
-
-def MeiRevFromJsonFile(filename):
-	ls = []
-	lines = myUtility.ReadFileLines(filename)
-	for l in lines:
-		rev = MeiRev()
-		rev.fromJson(l)
-		ls.append(rev)
-	return ls
-
+		
 def ReviewFromJsonFile(filename):
 	ls = []
 	lines = myUtility.ReadFileLines(filename)
