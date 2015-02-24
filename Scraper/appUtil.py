@@ -155,6 +155,12 @@ class Review:
 			ret = re.sub(e, emojiDict.emojiToEmoticon[e], ret)
 		return ret
 
+	def remove_json_breakers(self, strn):
+		ret = strn.replace("\n", " ")
+		ret = ret.replace("\r", " ")
+		ret = ret.replace("\r\n", " ")
+		return ret
+	
 
 	def clean_text(self, strn):
 		#TODO Check english
@@ -194,16 +200,16 @@ class Review:
 			self.id = data["reviewId"]
 			self.country = data["country"]
 		except ValueError:
-			print "AppUtil - Value error:", sys.exc_info()[0], " in: "
+			print "AppUtil.Review - Value error:", sys.exc_info()[0], " in: "
 			print jsonStr
 		except:
-			print "AppUtil - Unexpected error:", sys.exc_info()[0], " in: "
+			print "AppUtil.Review - Unexpected error:", sys.exc_info()[0], " in: "
 			print jsonStr
 		
 	def fromJson(self, jsonStr):
 		try:
-			#jsonStr = remove_escape_characters(jsonStr)
-			data = json.loads(jsonStr)
+			newStr = self.remove_json_breakers(jsonStr)
+			data = json.loads(newStr)
 			self.title = self.clean_text(data["title"])
 			self.rating = data["rating"]
 			self.user = self.clean_text(data["user"])
@@ -217,11 +223,12 @@ class Review:
 			self.id = data["reviewId"]
 			self.country = data["country"]
 		except ValueError:
-			print "AppUtil - Value error:", sys.exc_info()[0], " in: "
+			print "AppUtil.Review - Value error:", sys.exc_info()[0], " in: "
 			print jsonStr
-		except:
-			print "AppUtil - Unexpected error:", sys.exc_info()[0], " in: "
+		except Exception as err:
+			print "AppUtil.Review - Unexpected error:", sys.exc_info()[0], " ", err,  " in: "
 			print jsonStr
+			print newStr
 			
 
 
