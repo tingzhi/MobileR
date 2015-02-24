@@ -1,0 +1,235 @@
+
+\documentclass{acm_proc_article-sp}
+\usepackage{coloremoji}
+\input{macros.tex}
+
+
+\begin{document}
+
+\title{Working Title Mobile Feedback Study}
+
+\author{Kendall, Beatrice, Mei, Danny}
+
+
+\maketitle
+
+
+\section{Obtaining the Corpus}
+
+\TODO{Mei's android corpus}
+
+
+\subsection{ iOS Release Notes}
+\par We \TODO{word choice: downloaded} the release notes for the iOS applications in batches of \RNperDay applications per day from the \ias.
+We chose to  limit the number of applications downloaded due to concerns of overburdening the \ias.
+We found the \ias preferable to the App Store because the \ias saves the release notes for up to the previous 25 releases which allows us to develop and algorithm to automatically gather release notes on rotation so as not to trouble the \ias.
+The algorithm works in several steps.
+
+\par The first step of the algorithm generates a list of application ids that will be downloaded for the day.
+Ids are stored in json format containing (1) the id number of the application, (2) the total number of reviews the application received last time its information was downloaded, (3) the date the application was last downloaded, and (4) the number of new reviews since the last time the app's information was downloaded.
+The algorithm choses the top \RNperDay id numbers with the earliest last downloaded date and generates a daily id file.
+
+The next step retrieves all the html information from the \ias using the id numbers provided in the daily id file and stores this information in a file to be overwritten the next time the application with that id number is chosen.
+Between each subsequent call to the \ias, the algorithm waits 10 to 25 seconds.
+
+After collecting the daily application information, the algorithm strips the html formatting from the html data and retrieves the json that contains the application metadata \TODO{?}, this includes the release notes, the number of reviews, the genre of the application, the application name, etc.
+
+The algorithm then extracts the release notes from each of the daily application and compares them with the existing release notes file.
+Each release is stored in json format containing (1) the version number, (2) the text of the release notes, and (3) the time and date of the release.
+Any new releases are added to the existing file and duplicate releases are discard.
+If no file yet exists, all of the release note data from the daily application data is used to create one.
+
+
+This step in the algorithm is also the "growing" stage.
+The \ias often recommends additional applications to customers on each page; the recommended applications are one or more of the following categories: (1) the top iPhone apps, (2) the top iPad apps, (3) other apps by the same developer, and (4) apps that customers who bought this application also bought. 
+Our algorithm collects all of the recommend application ids and adds them to the id bank with an impossibly early last read date and no reviews to ensure the applications are read promptly and to maximize the reviews collected in the future.
+
+The final step of the algorithm updates the complete list of ids by changing the last read date and the number of reviews.
+When updating the number of reviews the algorithm subtracts the previous number of reviews from the new number of reviews and stores this as the number of new reviews. 
+This number is used in the review scraping algorithm so that the minimum amount of strain is put on the \ias.
+
+Our mining algorithm was originally seeded with the top 50 iOS applications as determined by Distimo \TODO{cite} on December 30th 2014. 
+Presently, the algorithm holds a total of \RNAppsTotal application ids in its rotation.
+
+\subsection{ iOS Reviews}
+
+The \ias does not store a significant number of reviews on each page accessed by the release notes algorithm so we deemed it necessary to create a second algorithm to accomplish this.
+Using the number of new reviews as determined by the release notes algorithm, we use a modified version of Kent Bye's script \TODO{cite} \cite{} which scrapes a number of reviews for a single application from the \ias.
+
+Reviews are stored on separate pages, with each page containing 10 reviews.
+The script calls down a certain number of pages and places the data from each review into json format containing (1) the title of the review, (2) the star rating given by the reviewer, (3) the username of the reviewer, (4) the application's version number being reviewed, (5) the date the review was given, (6) the body text of the review, (7) the percentage of people who found the review heplful, (8) the number of people who marked the review as helpful, (9) the total number of people who marked the review, (10) a link to the users profile, (11) the unique id number of the review, and (12) the country of the origin for the review.
+
+Our algorithm scrapes a maximum backlog of \RVperDay pages of reviews per application each run, which equates to up to \RVnumDaily reviews at one time. 
+Each day the review mining algorithm is run until it reaches \RVpagesperDay.
+Presently, the algorithm holds a has collected reviews for of \RVTotalApps applications for a total of \RVTotalRevs.
+
+Due to the sheer number of applications and the limitations of compute power, we limited our initial analysis to \minicorpSize free*\TODO{Footnote - free does not mean without in game purchases} game applications from both the \ias and the Google Play store.
+The top applications from the \ias were taken from Disteemo\TODO{cite} on Februrary $2^{nd}$, 2015 and a complete list can be found at \TODO{url}.
+These applications were taken from the main mining rotation and were mined for both release notes and reviews daily.
+
+
+\subsection{Labeled Corpus}
+\TODO{Labeling the corpus, rules, and agreement percentage}
+
+
+\MyParagraph{Bugs: }The bugs category describes statements in release notes that correct flaws within the application.
+An example of a statement belonging in the bugs category is "Fixed a crash when closing documents while there was an active text insertion point."
+%Statements belonging to the bugs category most often contain the words "...", "...", and "..."
+
+\MyParagraph{Enhacements: }The enhancements category describes statements in release notes that build on previously introduced features or improve performance, but do not correct overt flaws like those in the bugs category. 
+An example of a statement belonging in the enhancement category is "Improved the performance of the Stroke and Fill layer styles."
+%Statements belonging to the enhancements category most often contain the words "...", "...", and "..." 
+
+\MyParagraph{Features: }The features category describes statements in release notes that  introduce new functionality or properties to an application.
+An example of a statement belonging in the enhancement category is "Added preference setting for prompting to save session information on close."
+
+There is an additional miscellaneous category that we do not analyze that contains titles, headers, punctuation, other organizational type text, or duplications of release notes that are not considered in our analysis.
+
+The classification of the statements was completed using qualitative thematic coding. 
+Each of the classifications was done manually by the author and \hongyan using the criteria detailed above.
+The authors took a random sample across the sample corpus of statements and both classified the same data to compare for agreement.
+The classifications were validated by reaching 79\% agreement on 20\% of sample corpus - which is \lblCorpusSampleSize release note statements.  
+
+
+\subsection{Reviews}
+
+\TODO{bit about Meis data set}
+
+
+\subsubsection{Handling Reviews}
+
+Unlike release notes for applications, which generally avoid glaring misspelling and textual litter, user reviews are full of linguistic pitfalls that are not easy for computers to resolve. 
+Though our methods are not able to account for sarcasm, we attempted to cleanse the data so that it retained the intent and the message of the reviewer, while being more properly constructed so the reviews could be analyzed.
+Below is steps of modification we took to adjust the reviews.
+
+\MyParagraph{Emoji: } Emoji are pictures used to convey emotions that can be used in electronic messages, much like emoticons on steroids.
+ Originally from Japan, technology providers such as Microsoft, Apple, and Google added emoji as default characters sets to their mobile devices as their popularity grew and eventually standardized the Unicode codes for a set of common emoji in 2010.\TODO{cite - i got from wikipedia}   
+ As a result, emoji are common in reviews.
+Due to the platform-dependent meaning of emoji before standardization in October 2010, all emoji used in reviews before standardization are discarded.
+ 
+ Unfortunately, most sentiment analysis tools focus on emoticons \TODO{cite some papers and tools}, but very few recognize emoji. 
+ However, research has shown that emoticons contribute to more accurate sentiment analysis \TODO{cite} and we believe that emoticons and emoji serve similar purposes so we created a mapping between common emoji and emoticons to improve sentiment analysis. 
+ 
+ \begin{table}[t]
+ 	\begin{tabular} {|c | c |}
+		 \hline
+	 	Emoticon & Emoji \\ \hline
+		:D & 😁 😃 😸 😺 \\
+		\texttt{>}:( & 😠 😡 😾 \\
+		\texttt{'-\_-} & 😓 😥 😰\\
+		\hline
+ 	\end{tabular}
+ 	\caption{A sample mapping of emoji to emoticons. }
+ \end{table}
+ 
+  \begin{table}[t]
+  	\begin{tabular} {|c | c |}
+  		\hline
+  		Emoticon & Unmatched Emoji \\ \hline
+  		$\sim$:) & 👏 👌 👍\\
+  		$\sim$:(& 👎 💩\\
+  		$\sim$:\texttt{|} & 👊\\
+  		\hline
+  	\end{tabular}
+  	\caption{A sample mapping of unmatched emoji to emoticons. A '$\sim$' precedes each emoticon to indicate the emotion attached with that emoji is equivalent to a positive, neutral, or negative sentiment.}
+  \end{table}
+ 
+ \TODO{small example table with mapping}
+ Our mapping attempted to match each emoji to a similar emoticon from SentiStregth's emoticon library\TODO{cite}. 
+ If the emoji was unable to be mapped to SentiStrength's emoticons, a new entry was added from Wikipedia's \TODO{cite}list of emoticons if the sentiment and appearance were similar.
+ Finally, if an emoji did not match any widely recognized existing emoticon, three general categories were created to encapsulate "generally positive", "generally neutral", and "generally negative." Some examples of each category can be found in Table \TODO{ref}.
+ In SentiStrength's original library there is no degree of emotion expressed by emoticons, only the values -1, 0, and 1. We followed this template and therefore do not distinguish different degrees that may appear to be present between 😠 and 😡, for example. 
+ 
+ SentiStrength allows for multiple emotional associations between words and so most emoji tend to be either positive, negative, neutral, positive or neutral, or  negative or neutral. 
+ There was one emoji that escaped this classification. 
+ The "face with look of triumph" emoji, 😤, is used in both a positive and negative context.
+ Unable to initially place this emoji, we looked through several tweets and found usage split between those using it to express a triumphant emotion and those using it to express an angry emotion (as a person with steam coming off of their head). 
+ Due to the extreme duality of the triumph/anger emoji, the authors decided that the textual context that this emoji would solely determine the sentiment and decided to classify its sentimental value as neutral.
+ 
+ 
+ 
+ Our emoji library can be found at \TODO{add url}
+ 
+
+
+\TODO{include link list of emojis and how they rate in terms of positivity. This is ridiculous!!!!}
+
+\section{Sentiment Spell Check}
+
+Research in sentiment analysis \TODO{cite sentistrength paper} shows that increased levels of sentiment can be related to repeated letters.
+The sentiment analysis tool SentiStrength operates under the assumption that a single repeated letter indicates a misspelling, but two or more repeated letters denote a intensification of the sentiment \TODO{cite}.
+
+
+
+\section{Language Checking}
+
+\begin{table}
+	
+
+\begin{tabular}{|c | c | c|} \hline
+	API & Time (s) &  Reviews Removed \\ \hline
+	No Language Checking* & 7.06 & 65  \\
+	Google Translate (via Goslate) & 290.42 & 45 \\
+	Langid & 15.42 & 105 \\
+	guess-language & 26.765 & 327    \\ \hline
+	
+\end{tabular}
+\caption{ *With no language checking the number of reviews removed include those with Unicode characters such as $\textellipsis$ or pre-2010 emoji, which is why Google Translate appears to have retained extra reviews. }
+\end{table}
+
+\section{Classifier - NMB and LDA}
+
+\subsection{Multinomial Naive Bayesian Classifier}
+
+\subsubsection{Preprocessing the Data}
+
+Before classifying any of the data we first sanitize it to try to remove noise, which could be topic headers, distinct bullet points, and stop words. 
+The following is the steps executed to prepare the data for classification.
+
+\begin{figure}
+\begin{verbatim}
+...
+BUG FIXES
+
+-A crash that occired when an image is sent to 
+  Afterlight from another app has been fixed.
+-Other small bug fixes and improvements.
+
+...
+\end{verbatim}
+\caption{A sample section in release notes. Notice the two different uses of the phrase "bug fixes": one as a divider and one as something shipped in the release.}
+\label{figbugfix}
+\end{figure}
+
+First, the noise related to section headers within release notes is removed because indicators may be removed later in the preprocessing steps.
+Figure \ref{figbugfix} represents an example of a section header in release notes found in the application Afterlight. 
+The statement "BUG FIXES" should not be considered for classification under the Bug label, while the "bug fixes" in  "Other small bug fixes and improvements" is labeled as a Bug. 
+After removing section headers, all of the text is converted to lowercase and non-alphanumeric expunged.
+
+
+The next step in preprocessing removes stop words and stems the words using the Porter stemmer from the nltk.
+
+
+
+\subsection{LDA}
+
+\begin{table}
+	\begin{tabular}{ c | c | c | c|} \cline{2-4}
+				& Precision & recall & f1-score \\ \hline
+		\multicolumn{1}{| c |}{Bug} & 0.91 & 0.91 & 0.91 \\ 
+		\multicolumn{1}{| c |}{Enhancement} & 0.63 & 0.91 & 0.75 \\
+		\multicolumn{1}{| c |}{Feature} & 0.69 & 0.45 & 0.54 \\
+		\multicolumn{1}{| c |}{Miscellaneous} & 0.77 & 0.39 & 0.5 \\ \hline
+	\end{tabular}
+	\caption{Overall precision is 0.722}
+\end{table}
+\section{}
+
+
+\section{Acknowledgments}
+
+Pooria
+Emojis for latex
+https://github.com/alecjacobson/coloremoji.sty
+
+\end{document}
