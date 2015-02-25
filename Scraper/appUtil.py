@@ -126,6 +126,7 @@ class Review:
 		self.userLink = ""
 		self.id = ""
 		self.country = ""
+		self.labels = []
 
 	def __eq__(self, other):
 		return self.id == other.id
@@ -145,7 +146,8 @@ class Review:
 		jsonStr = jsonStr + str(self.totalVote) + ",\"userLink\":\""
 		jsonStr = jsonStr + self.userLink + "\",\"reviewId\":\""
 		jsonStr = jsonStr + self.id + "\",\"country\":\""
-		jsonStr = jsonStr + self.country + "\"}"
+		jsonStr = jsonStr + self.country + "\",\"labels\":"
+		jsonStr = jsonStr + json.dumps(self.labels) + "}"
 		return jsonStr.encode("ascii", "ignore")
 
 	def replace_emojis(self, strn):
@@ -199,6 +201,8 @@ class Review:
 			self.userLink = data["userLink"]
 			self.id = data["reviewId"]
 			self.country = data["country"]
+			if "labels" in data:
+				self.labels = data["labels"]
 		except ValueError:
 			print "AppUtil.Review - Value error:", sys.exc_info()[0], " in: "
 			print jsonStr
@@ -222,6 +226,8 @@ class Review:
 			self.userLink = data["userLink"]
 			self.id = data["reviewId"]
 			self.country = data["country"]
+			if "labels" in data:
+				self.labels = data["labels"]
 		except ValueError:
 			print "AppUtil.Review - Value error:", sys.exc_info()[0], " in: "
 			print jsonStr
