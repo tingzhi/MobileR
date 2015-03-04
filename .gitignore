@@ -1,3 +1,4 @@
+*.pyc
 /Test/DontAdd.txt
 /Classifier/*
 /KeywordDictionaries/*

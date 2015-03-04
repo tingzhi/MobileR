@@ -1,7 +1,9 @@
 
 \documentclass{acm_proc_article-sp}
 \usepackage{coloremoji}
+\usepackage{pifont}
 \input{macros.tex}
+
 
 
 \begin{document}
@@ -159,7 +161,7 @@ Due to the platform-dependent meaning of emoji before standardization in October
 Research in sentiment analysis \TODO{cite sentistrength paper} shows that increased levels of sentiment can be related to repeated letters.
 The sentiment analysis tool SentiStrength operates under the assumption that a single repeated letter indicates a misspelling, but two or more repeated letters denote a intensification of the sentiment \TODO{cite}.
 
-
+However when users are giving reviews, they are commonly in a garbled form of english.
 
 \section{Language Checking}
 
@@ -167,7 +169,7 @@ The sentiment analysis tool SentiStrength operates under the assumption that a s
 	
 
 \begin{tabular}{|c | c | c|} \hline
-	API & Time (s) &  Reviews Removed \\ \hline
+	API & Time (s) &  \# Removed \\ \hline
 	No Language Checking* & 7.06 & 65  \\
 	Google Translate (via Goslate) & 290.42 & 45 \\
 	Langid & 15.42 & 105 \\
@@ -179,11 +181,16 @@ The sentiment analysis tool SentiStrength operates under the assumption that a s
 
 \section{Classifier - NMB and LDA}
 
+
 \subsection{Multinomial Naive Bayesian Classifier}
+
+
 
 \subsubsection{Preprocessing the Data}
 
-Before classifying any of the data we first sanitize it to try to remove noise, which could be topic headers, distinct bullet points, and stop words. 
+Before classifying any of the data we first normalize language to a more generic level so that a classifier can try to extract meaning.
+Our first step removes formatting noise that may make texts easier for humans to read but serves no purpose for a computer. 
+Th type of linguistic noise our preprocessing focuses on removing is topic headers, distinct bullet points, different verb forms, and stop words. 
 The following is the steps executed to prepare the data for classification.
 
 \begin{figure}
@@ -191,9 +198,11 @@ The following is the steps executed to prepare the data for classification.
 ...
 BUG FIXES
 
--A crash that occired when an image is sent to 
+-A crash that occured when an image is sent to 
   Afterlight from another app has been fixed.
 -Other small bug fixes and improvements.
+-Fixed a small saving bug.
+-a small fix to a location data bug
 
 ...
 \end{verbatim}
@@ -201,13 +210,32 @@ BUG FIXES
 \label{figbugfix}
 \end{figure}
 
-First, the noise related to section headers within release notes is removed because indicators may be removed later in the preprocessing steps.
-Figure \ref{figbugfix} represents an example of a section header in release notes found in the application Afterlight. 
+If the data source is release notes, the noise related to section headers within release notes is removed because indicators may be removed later in the preprocessing steps.
+Figure \ref{figbugfix} represents an example of a section header in release notes found in the application Afterlight. \TODO{The last two statements are from different release notes notes than the first two and the header, I have added them in to serve as a running example. }
 The statement "BUG FIXES" should not be considered for classification under the Bug label, while the "bug fixes" in  "Other small bug fixes and improvements" is labeled as a Bug. 
-After removing section headers, all of the text is converted to lowercase and non-alphanumeric expunged.
+Reviews do not usually follow the list format common in release notes, therefore we skip removing section headers when processing user reviews.
 
 
-The next step in preprocessing removes stop words and stems the words using the Porter stemmer from the nltk.
+Automatic classifiers would potentially distinguish the words "fixed", "fixes", "Fixed", and "fix" as four different meanings, so the next few steps try to normalize language for the classifiers.
+After removing initial unrelated statements, all of the text is converted to lowercase and non-alphanumeric expunged.
+This gets rid of the distinction between "fixed" and "Fixed" as well as removing any extra bullets or symbols such as "\ding{228}".
+
+Then we stem the words using the Porter stemmer from the nltk. 
+A stemmer transforms words from their conjugated or inflected forms to the root of the word. 
+After transformation by the Porter stemmer, "fixed", "fixes", and "fix" are all reduced to "fix".
+Stemming the words allows the classifiers to make associations on the concepts conveyed by the words, not based on the tense or variation of the word.
+
+The final step in preprocessing the corpus removes stop words.
+Stop words are words that are necessary for the mechanics of natural languages, but do not further understanding of abstract content.
+Stop words commonly include prepositions, articles, pronouns, and adverbs. 
+We use a stop word list provided by \beatrice.
+
+In addition to a general language stop word list, we also created a mobile stop word list. 
+This list contains the names of all of the applications in our corpus (e.g. Facebook, TriviaCrack, Afterlight, etc.) .
+This prevents our training set from over-focusing on the classifier on applications associated with a label.
+For example, application "BuggyApp" has a lot of reviews or release notes that mention "bug" or "fix" in the form of "BuggyApp has too many bugs. Don't buy it!" or "fixed a bug that made BuggyApp slow".
+When generating a model with the training set, the classifiers will associate "BuggyApp" with the "bugfix" topic. 
+When classifying another application not in the training set, "AnotherApp", the classifier will more weakly connect a bugfix and the "bugfix" topics because the data from "AnotherApp" does not contain references to "BuggyApp".
 
 
 
