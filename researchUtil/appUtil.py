@@ -60,12 +60,16 @@ class researchData:
 		ret = re.sub('[^\x00-\x7F]', "", ret) #gets rid of things outside of ascii
 		return ret
 
-	def clean_text(self, strn):
-		ret = self.replace_emojis(strn)
-		ret = ret.replace("\\", "\\\\")
-		ret = ret.replace("\"", "\\\"")
-	#	ret = ret.replace('\xe2\x80\xa6', "...")
-		return ret
+	def check_Language(self, strn):
+	#	gs = goslate.Goslate()
+	#	if len(strn) < 20:
+	#		while len(strn) < 20:
+	#			strn = strn + " " + strn
+	#	lang = guess_language.guessLanguage(strn)
+		lang = langid.classify(strn[:100])[0]
+	#	lang = gs.detect(strn[:100])
+		if lang != 'en':
+			raise Exception("AppUtil.MeiRev - Not English Submission " + strn + " Language - " + str(lang) )
 
 
 
@@ -207,6 +211,9 @@ class Review(researchData):
 	def replace_emojis(self, strn):
 		return super(Review, self).replace_emojis(strn)
 
+	def check_Language(self, strn):
+		super(Review, self).check_Language(strn)	
+
 	def remove_json_breakers(self, strn):
 		ret = strn.replace("\n", " ")
 		ret = ret.replace("\r", " ")
@@ -296,7 +303,7 @@ class Review(researchData):
 		return self.text
 
 
-class MeiRev:
+class MeiRev(researchData):
 
 	def __init__(self):
 		self.appName = ""
@@ -307,6 +314,8 @@ class MeiRev:
 		self.date = datetime.datetime.min
 	
 	def check_Language(self, strn):
+		super(Review, self).check_Language(strn)	
+		return
 	#	gs = goslate.Goslate()
 	#	if len(strn) < 20:
 	#		while len(strn) < 20:
@@ -319,11 +328,7 @@ class MeiRev:
 	
 	
 	def replace_emojis(self, strn):
-		ret = strn
-		emojis = re.findall (r'\xf0\x9f..', ret)
-		for e in emojis:
-			ret = re.sub(e, emojiDict.emojiToEmoticon[e], ret)
-		return ret
+		return super(MeiRev, self).replace_emojis(strn)
 
 	def clean_text(self, strn):
 		ret = self.replace_emojis(strn)

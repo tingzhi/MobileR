@@ -33,8 +33,8 @@ class TextProcessingTests(unittest.TestCase):
 		self.meiRev = appUtil.MeiRev()
 		self.emojiList = myUtility.ReadFileLines("Emojilist.txt")
 		self.brokenJson = myUtility.ReadFileLines("brokenJson.txt")
-		self.englishReviews = myUtility.ReadFileLines("engReviewText.txt")
-		self.nonEngReviews = myUtility.ReadFileLines("nonEngReviewText.txt")
+#		self.englishReviews = myUtility.ReadFileLines("engReviewText.txt")
+#		self.nonEngReviews = myUtility.ReadFileLines("nonEngReviewText.txt")
 		
 
 	#TODO English test - make file
