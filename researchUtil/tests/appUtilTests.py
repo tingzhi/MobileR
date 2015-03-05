@@ -32,6 +32,22 @@ class TextProcessingTests(unittest.TestCase):
 		self.rev = appUtil.Review()
 		self.meiRev = appUtil.MeiRev()
 		self.emojiList = myUtility.ReadFileLines("Emojilist.txt")
+		self.brokenJson = myUtility.ReadFileLines("brokenJson.txt")
+		self.englishReviews = myUtility.ReadFileLines("engReviewText.txt")
+		self.nonEngReviews = myUtility.ReadFileLines("nonEngReviewText.txt")
+		
+
+	#TODO English test - make file
+	#TODO Not english test - make file
+
+
+	def testReview_brokenJson(self):
+		try:
+			self.rev.fromJson(self.brokenJson[0])
+		except:
+			self.fail("Review.brokenJson - did not remove carriage returns")
+		pass
+
 
 	def testReview_emojiDict(self):
 		for el in self.emojiList:
@@ -46,7 +62,7 @@ class TextProcessingTests(unittest.TestCase):
 			try:
 				self.meiRev.replace_emojis(el)
 			except:
-				self.fail("Review.emojiDict - " + el + " is not in the emoji dictionary or failed to parse correctly")
+				self.fail("MeiReview.emojiDict - " + el + " is not in the emoji dictionary or failed to parse correctly")
 		pass
 
 
