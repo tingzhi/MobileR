@@ -41,7 +41,7 @@ emojiToEmoticon = { '\xf0\x9f\x99\x8b' : '(:',	#happy person raising one hand
 	'\xF0\x9F\x98\xB9' : ':-D',	#cat face with tears of joy
 	'\xF0\x9F\x98\xA8' : ':-O', 	#fearful face
 	'\xF0\x9F\x98\x9B' : ':-P', 	#face with stuck-out tongue
-	'\xF0\x9F\x98\x95' : ':-\\',	#confused face
+	'\xF0\x9F\x98\x95' : ':-/',	#confused face - changed direction b/c parse errors
 	'\xF0\x9F\x98\x81' : ':D',   	#grinning face with smiling eyes
 	'\xF0\x9F\x98\x83' : ':D',  	#smiling face with open mouth
 	'\xF0\x9F\x98\x80' : ':D',	#grinning face
@@ -98,5 +98,42 @@ emojiToEmoticon = { '\xf0\x9f\x99\x8b' : '(:',	#happy person raising one hand
 	'\xF0\x9F\x91\xBF' : '>:(',	#imp
 	'\xF0\x9F\x99\x88' : '~:|',	#see-no-evil monkey
 	'\xF0\x9F\x99\x89' : '~:|',	#hear-no-evil monkey
-	'\xF0\x9F\x99\x8A' : '~:|'	#speak-no-evil monkey
+	'\xF0\x9F\x99\x8A' : '~:|',	#speak-no-evil monkey
+	'\xF0\x9F\x91\xB2' : ':D', 	#man with gua pi mao
+	'\xF0\x9F\x91\xB3' : ':D', 	#man with turban
+	'\xF0\x9F\x91\xAE' : ':D',	#police officer
+	'\xF0\x9F\x91\xB7' : '-_-',	#construction worker
+	'\xF0\x9F\x92\x82' : ':|',	#guardsman
+	'\xF0\x9F\x91\xB6' : ':D',	#baby
+	'\xF0\x9F\x91\xA6' : ':D',	#boy
+	'\xF0\x9F\x91\xA7' : ':D',	#girl
+	'\xF0\x9F\x91\xA8' : ':D',	#man
+	'\xF0\x9F\x91\xA9' : ':D',	#woman
+	'\xF0\x9F\x91\xB4' : ':D',	#older man
+	'\xF0\x9F\x91\xB5' : ':)',	#older woman
+	'\xF0\x9F\x91\xB1' : ':D',	#person with blond hair
+	'\xF0\x9F\x91\xBC' : ':D',	#baby angel
+	'\xF0\x9F\x91\xB8' : ':)',	#princess
+	'\xF0\x9F\x92\x80' : '~:(',	#skull
+	'\xF0\x9F\x91\xBD' : ':)',	#extraterrestrial alien
+	'\xF0\x9F\x94\xA5' : '~:|',	#fire
+	'\xF0\x9F\x92\xAB' : '~:)',	#dizzy
+	'\xF0\x9F\x92\xA5' : '~:|',	#boom symbol	
+	'\xF0\x9F\x92\xA2' : '~:(',	#anger symbol	
+	'\xF0\x9F\x92\x8F' : '<3',	#kiss
+	'\xF0\x9F\x92\x91' : '<3',	#couple with heart
+	'\xF0\x9F\x91\xB0' : ':D',	#bride with veil	
+	'\xF0\x9F\x92\x9B' : '<3',	#yellow heart
+	'\xF0\x9F\x92\x99' : '<3',	#blue heart
+	'\xF0\x9F\x92\x9C' : '<3',	#purple heart
+	'\xF0\x9F\x92\x9A' : '<3',	#green heart
+	'\xF0\x9F\x92\x94' : '</3',	#broken heart
+	'\xF0\x9F\x92\x97' : '<3',	#growing heart
+	'\xF0\x9F\x92\x93' : '<3',	#beating heart
+	'\xF0\x9F\x92\x95' : '<3 <3',	#two hearts
+	'\xF0\x9F\x92\x96' : '<3',	#sparkling heart
+	'\xF0\x9F\x92\x9E' : '<3 <3',	#revolving hearts
+	'\xF0\x9F\x92\x98' : '<3',	#heart with arrow
+	'\xF0\x9F\x92\x8C' : '<3',	#love letter
+	'\xF0\x9F\x92\x8B' : ':-*'	#kiss mark
 	}

@@ -1,4 +1,6 @@
 *.pyc
+/Scraper/*.pyc
+/researchUtil/*.pyc
 /Test/DontAdd.txt
 /Classifier/*
 /KeywordDictionaries/*

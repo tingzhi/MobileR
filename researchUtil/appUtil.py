@@ -15,6 +15,7 @@
    limitations under the License.
 
 '''
+from abc import ABCMeta, abstractmethod
 import json
 import sys
 import datetime
@@ -22,13 +23,63 @@ import re
 import guess_language #for language prediction!
 import goslate
 import langid
-from researchUtil import myUtility
-from researchUtil import emojiDict
-
-
+import myUtility
+import emojiDict
 
 class researchData:
+	__metaclass__ = ABCMeta
+
+	@abstractmethod
+	def toJsonStr(): pass
 	
+	@abstractmethod
+	def fromJson(): pass
+
+	
+	def replace_emojis(self, strn):
+		ret = strn
+		emojis = re.findall (r'\xf0\x9f..', ret)
+		for e in emojis:
+			ret = re.sub(e, emojiDict.emojiToEmoticon[e], ret)
+		return ret
+	
+	def clean_text(self, strn):
+		#TODO Check english
+		#	spell check
+		ret = self.replace_emojis(strn)
+		ret = ret.replace("\\", "\\\\")
+		ret = ret.replace("\"", "\\\"")
+		ret = ret.replace("\n\r", " ")
+		ret = ret.replace("\r", " ")
+		ret = ret.replace("\n", " ")
+		ret = ret.replace("\t", " ")
+		ret = re.sub('\\\*\"', '\\\"', ret) #This gets rid of extra slashes
+
+		ret = re.sub('\s{2,}', ' ', ret) # this get rid of large spaces
+		ret = ret.replace("<semicolon>", ";") #for translating from the csv, there were some storage errors
+		ret = re.sub('[^\x00-\x7F]', "", ret) #gets rid of things outside of ascii
+		return ret
+
+	def clean_text(self, strn):
+		ret = self.replace_emojis(strn)
+		ret = ret.replace("\\", "\\\\")
+		ret = ret.replace("\"", "\\\"")
+	#	ret = ret.replace('\xe2\x80\xa6', "...")
+		return ret
+
+
+
+	
+'''	def cleanReleaseNotes(self, notes):
+		ret = notes.replace('\n','\\n')
+		ret = ret.replace('\r','\\r') #only rn
+	#	ret = ret.replace('\t','\\t')
+		ret = ret.replace('\"', '\\"')
+		ret = ret.replace('\(', '\\(') #only rn
+		ret = ret.replace('\)', '\\)') #only rn
+		
+		return ret
+'''
 
 
 class Entry:
@@ -115,7 +166,7 @@ class HistoryEntry:
 	def __eq__(self, str):
 		return self.id == str
 
-class Review:
+class Review(researchData):
 	def __init__(self):
 		self.title = ""
 		self.rating = ""
@@ -154,11 +205,7 @@ class Review:
 		return jsonStr.encode("ascii", "ignore")
 
 	def replace_emojis(self, strn):
-		ret = strn
-		emojis = re.findall (r'\xf0\x9f..', ret)
-		for e in emojis:
-			ret = re.sub(e, emojiDict.emojiToEmoticon[e], ret)
-		return ret
+		return super(Review, self).replace_emojis(strn)
 
 	def remove_json_breakers(self, strn):
 		ret = strn.replace("\n", " ")
@@ -168,6 +215,7 @@ class Review:
 	
 
 	def clean_text(self, strn):
+		return super(Review, self).clean_text(strn)
 		#TODO Check english
 		#	spell check
 		ret = self.replace_emojis(strn)
